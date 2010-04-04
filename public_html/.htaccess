@@ -1,0 +1,8 @@
+php_value error_reporting 4095
+php_value include_path ".;M:/SERVER/www/websites/MVC3/_config;M:/SERVER/www/websites/MVC3/source/include"
+php_value date.timezone "Europe/Amsterdam"
+
+	RewriteEngine On
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteRule ^.*$ /websites/MVC3/public_html/index.php [QSA,L]
