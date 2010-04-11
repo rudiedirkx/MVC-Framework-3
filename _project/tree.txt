@@ -1,0 +1,14 @@
+/admin.clubs/ (list, new, details, menu, logo)
+/admin.clubs.sports/
+/admin.clubs.resources/ (details, prices)
+/admin.clubs.timesets/
+/admin.clubs.membertypes/
+/admin.clubs.access/ (rechten, supervisors)
+/admin.logs/
+/admin.rules/
+/admin.whatsnew/
+/admin.access/ (superusers, access zones)
+/admin.contacts/
+/admin.languages/
+/admin.variables/ (menu items, qlists)
+

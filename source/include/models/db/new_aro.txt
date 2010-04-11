@@ -1,0 +1,46 @@
+abstract class ActiveRecordObject {
+
+	// Finder
+	static public function finder( db_generic $db = null );
+
+	static public setDbObject( db_generic $db );
+
+
+	// Static properties
+	static public $_db;
+	static public $table;
+	static public $pk;
+
+	// Object properties
+	public $db;
+
+
+	// Semi-static
+	public function insert( $data );
+
+	public function replace( $data );
+
+	public function update( $data, $conditions );
+
+	public function delete( $conditions );
+
+
+	public function __construct( $data ); // $data is either an array for fill() or the PK value
+
+	public function findOne( $conditions );
+
+	public function findMany( $conditions );
+
+	public function byPK( $pk, $more_conditions );
+
+	public function findFirst( $conditions ); 
+
+
+	// Object methods
+	protected function fill( $data );
+
+	protected function init(); // executed after fill()
+
+	public function getDbObject(); // returns $this->db or self::$_db;
+
+}
