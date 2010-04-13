@@ -2,15 +2,15 @@
 
 # MySQL login vars #
 if ( false ) {
-	define( 'SQL_HOST',				'devkids.nl' );
-	define( 'SQL_DB',				'baanres2_main' );
-	define( 'SQL_USER',				'baanres2' );
-	define( 'SQL_PASS',				'pindakaas' );
+	define( 'SQL_HOST',				'xx' );
+	define( 'SQL_DB',				'xx' );
+	define( 'SQL_USER',				'xx' );
+	define( 'SQL_PASS',				'xx' );
 } else {
-	define( 'SQL_HOST',				'localhost' );
-	define( 'SQL_DB',				'baanres2_main' );
-	define( 'SQL_USER',				'usager' );
-	define( 'SQL_PASS',				'usager' );
+	define( 'SQL_HOST',				'yy' );
+	define( 'SQL_DB',				'yy' );
+	define( 'SQL_USER',				'yy' );
+	define( 'SQL_PASS',				'yy' );
 }
 
 ?>
