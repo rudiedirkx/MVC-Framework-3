@@ -17,7 +17,7 @@ class __Home extends __TopModule
 		function pd( $fs ) {
 			echo '<ul>';
 			foreach ( $fs AS $f ) {
-				if ( is_dir($f) || 0 < preg_match('/^inc\.cls\.mod_([a-z_]+)\.php$/', basename($f), $parrMatches) ) {
+				if ( is_dir($f) || 0 < preg_match('/^inc\.cls\.mod_([0-9a-z_]+)\.php$/', basename($f), $parrMatches) ) {
 					$c = explode('/', substr($f, strlen(PROJECT_CONTROLLERS)+1));
 					if ( !is_dir($f) ) {
 						$c[count($c)-1] = $parrMatches[1];

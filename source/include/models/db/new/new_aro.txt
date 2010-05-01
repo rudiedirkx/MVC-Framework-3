@@ -7,9 +7,10 @@ abstract class ActiveRecordObject {
 
 
 	// Static properties
-	static public $_db;
-	static public $table;
-	static public $pk;
+	static public $_db; // for all extensions
+
+	static public $_table; // per extension 'type'
+	static public $_pk; // per extension 'type'
 
 	// Object properties
 	public $db;
@@ -20,23 +21,26 @@ abstract class ActiveRecordObject {
 
 	public function replace( $data );
 
-	public function update( $data, $conditions );
+	public function updateMany( $data, $conditions );
 
-	public function delete( $conditions );
+	public function deleteMany( $conditions );
 
 
-	public function __construct( $data ); // $data is either an array for fill() or the PK value
+	protected function __construct( $data );
 
 	public function findOne( $conditions );
 
 	public function findMany( $conditions );
 
 	public function byPK( $pk, $more_conditions );
+	public function get( $pk, $more_conditions );
 
 	public function findFirst( $conditions ); 
 
 
 	// Object methods
+	protected function delete();
+
 	protected function fill( $data );
 
 	protected function init(); // executed after fill()

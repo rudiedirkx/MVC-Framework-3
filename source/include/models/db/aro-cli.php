@@ -8,6 +8,11 @@ array_shift($_SERVER['argv']);
 list($classname, $tablename, $pkname, $columns, ) = $_SERVER['argv'];
 $columns = max(1, (int)$columns);
 
+$szFilename = 'inc.cls.'.strtolower($classname).'.php';
+if ( file_exists($szFilename) ) {
+	exit('File <'.$szFilename.'> already exists.'."\n");
+}
+
 $szClassFileContents = '<?php
 
 class '.$classname.' extends ActiveRecordObject {
@@ -41,11 +46,6 @@ class '.$classname.' extends ActiveRecordObject {
 } // END Class '.$classname.'
 
 ?'.'>';
-
-$szFilename = 'inc.cls.'.strtolower($classname).'.php';
-if ( file_exists($szFilename) ) {
-	exit('File <'.$szFilename.'> already exists.'."\n");
-}
 
 if ( $fp = @fopen($szFilename, 'w') ) {
 	fwrite($fp, $szClassFileContents);

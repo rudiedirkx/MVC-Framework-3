@@ -45,7 +45,7 @@ abstract class __TopModule {
 		if ( '/' != $f_szFullRequestUri ) {
 			$arrUri = explode('/', substr($f_szFullRequestUri, 1), 2);
 			$szModule = $arrUri[0];
-			$szPath = '/'.$arrUri[1];
+			$szPath = '/'.( 1 < count($arrUri) ? $arrUri[1] : '' );
 
 			if ( is_object($mod = self::loadModule(explode('-', $szModule), $szPath)) ) {
 				return $mod;

@@ -30,8 +30,8 @@ require_once( PROJECT_INC_DB . '/inc.cls.db_mysqli.php' );
 $db = new db_mysqli( SQL_HOST, SQL_USER, SQL_PASS, SQL_DB );
 
 // Save db layer
-require_once( PROJECT_INC_DB . '/inc.cls.activerecordobject.php' );
-ActiveRecordObject::setDbObject($db);
+#require_once( PROJECT_INC_DB . '/inc.cls.activerecordobject.php' );
+#ActiveRecordObject::setDbObject($db);
 
 
 // Define general functions
