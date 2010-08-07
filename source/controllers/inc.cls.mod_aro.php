@@ -21,7 +21,7 @@ class mod_aro extends __topmodule {
 	protected function test1()
 	{
 echo '<pre>';
-		$res = aroreservation::finder()->bypk(62265);
+		$res = person::finder()->bypk(62265);
 		$res->resource_id = 'a';
 		$res->slots = 3;
 		var_dump($res->save());

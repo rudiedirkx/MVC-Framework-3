@@ -1,370 +1,199 @@
-<?php #1.10
+<?php #2.1
 
-// Todo
-// - DataCenter to counteract doubles
-
-class AROException extends Exception { }
 class DBException extends Exception { }
+class AROException extends DBException { }
 
 abstract class ActiveRecordObject {
 
-	const HAS_ONE = 1; // FK in $this, Unique Key in foreign table
-	const HAS_MANY = 2; // PK in $this, FK in foreign table
-	const MANY_TO_MANY = 3; // 
-	const FROM_FUNCTION = 4; // Uses a user defined function to fetch the records and saves it as normal
+	const GETTER_ONE		= 1;
+	const GETTER_MANY		= 2;
+	const GETTER_FUNCTION	= 3;
+	const GETTER_FIRST		= 4;
 
-	/**
-	 * The global, default database object
-	 */
-	protected static $__db;
-
-	/**
-	 * Save the database abstraction layer object (just once)
-	 * Todo:
-	 * - Save one db object per table/ARO child and fetch the default one if none is set
-	 */
-	final public static function setDbObject( db_generic $db ) {
-		self::$__db = $db;
-
-	} // END setDbObject() */
-
-
-	/**
-	 * Whether to track changed columns
-	 */
-	protected $_trackChanges = false;
-
-	/**
-	 * The user-changed columns
-	 */
-	protected $_changedColumns = array();
-
-	/**
-	 * All record columns
-	 */
-	protected $_values = array();
-
-	/**
-	 * The table's name
-	 */
-	protected static $_table = '_';
-
-	/**
-	 * All columns except for the PK
-	 */
-	protected static $_columns = array(
-		'_'
-	);
-
-	/**
-	 * The name of the PK field
-	 */
-	protected static $_pk = '_';
-
-	/**
-	 * Format:
-	 * A => array( B, C, D, E, F )
-	 * See method __get for details
-	 */
-	protected static $_relations = array(
-		
-	);
-
-
-	/**
-	 * 
-	 */
-	static public function finder( $class = __CLASS__ ) {
-		if ( !class_exists($class, true) ) {
-			throw new AROException('Class "'.$class.'" doesn\'t exist');
-		}
+	// Finder
+	static public function finder( $class ) {
 		$class = strtolower($class);
-		static $finders = array();
-		if ( empty($finders[$class]) ) {
-			$finders[$class] = new $class;
+		if ( !isset(self::$_finders[$class]) ) {
+			self::$_finders[$class] = new $class;
 		}
-		return $finders[$class];
+		return self::$_finders[$class];
+	}
 
-	} // END finder() */
+	final static public function setDbObject( $db ) {
+		self::$_db = $db;
+	}
 
 
-	/**
-	 * Keeps an empty object, or fills it with prefetched data
-	 */
-	public function __construct( $data = null ) {
-		if ( null !== $data && ( is_array($data) || is_object($data) ) ) {
-			$this->fill( (array)$data );
+	// Static properties
+	static public $_finders = array(); // for all extensions
+	static public $_db; // for all extensions
+
+#	const _TABLE; // per extension 'type'		# cannot be predefined because can only be assigned once
+#	const _PK; // per extension 'type'			# cannot be predefined because can only be assigned once
+
+
+
+	// Semi-static functions
+	public function insert( $data ) {
+		$this->getDbObject()->insett( $this->getTableName(), $data );
+	}
+
+	public function replace( $data ) {
+		$this->getDbObject()->replace( $this->getTableName(), $data );
+	}
+
+	public function updateMany( $data, $conditions ) {
+		$this->getDbObject()->update( $this->getTableName(), $data, $conditions );
+	}
+
+	public function deleteMany( $conditions ) { // there might be a LIMIT and ORDER BY in $conditions (and that's fine)
+		$this->getDbObject()->delete( $this->getTableName(), $conditions );
+	}
+
+	protected function __construct( $data = null ) {
+		if ( null !== $data ) {
+			$this->fill( $data );
 		}
-		$this->_trackChanges = true;
+	}
 
-	} // END __construct() */
-
-
-	/**
-	 * 
-	 */
-	public function __set( $k, $v ) {
-		if ( true === $this->_trackChanges && 0 !== strpos($k, '_') ) {
-			$this->_values[$k] = $v;
-			$this->_changedColumns[$k] = true;
-		}
-		else {
-			$this->$k = $v;
-		}
-
-	} // END __set() */
-
-
-	/**
-	 * If a relation member is requested and the member is unset:
-	 * - HAS_ONE
-	 *  : array( HAS_ONE, Type, Local FK column name, External PK column name )
-	 * - HAS_MANY
-	 *  : array( HAS_MANY, Type, External FK column name, Local PK column name )
-	 * - MANY_TO_MANY
-	 *  : array( MANY_TO_MANY, Type, Local PK column name, array( Relation table name, Relation FK to local, Relation FK to external ), External PK column name )
-	 * - FROM_FUNCTION
-	 *  : array( FROM_FUNCTION, Type, External FK column name, Local PK column name )
-	 */
-	public function __get( $k ) {
-		if ( 0 === strpos($k, '_') ) {
-			return isset($this->$k) ? $this->$k : null;
-		}
-		if ( !isset($this->_values[$k]) ) {
-			$relations = $this->getStaticChildValue('relations');
-			if ( !isset($relations[$k]) ) {
-				return null;
-			}
-			$rel = $relations[$k];
-			if ( self::FROM_FUNCTION !== $rel[0] ) {
-				$finder = self::finder($rel[1]);
-				$key1 = $rel[2];
-			}
-			$key2 = empty($rel[3]) ? 'id' : $rel[3];
-			if ( self::HAS_ONE === $rel[0] ) {
-				$field = $finder->getStaticChildValue('table').'.'.$key2;
-				$this->$k = null === $this->$key1 ? new $rel[1] : $finder->findOne( $field.' = ?', $this->$key1 );
-			}
-			else if ( self::HAS_MANY === $rel[0] ) {
-				$field = $finder->getStaticChildValue('table').'.'.$key1;
-				$this->$k = $finder->findMany( $field.' = ?'.( !empty($rel[4]) ? ' AND '.$rel[4] : '' ), $this->$key2 );
-			}
-			else if ( self::MANY_TO_MANY === $rel[0] ) {
-				$field = $finder->getStaticChildValue('table').'.'.$rel[4];
-				$this->$k = $finder->findMany( $field.' IN ( SELECT '.$rel[3][2].' FROM '.$rel[3][0].' WHERE '.$rel[3][1].' = '.$this->$key1.' )' );
-			}
-			else if ( self::FROM_FUNCTION === $rel[0] && is_callable(array($this, $rel[1])) ) {
-				$this->$k = call_user_func(array($this, $rel[1]));
-			}
-		}
-		return $this->_values[$k];
-
-	} // END __get() */
-
-
-	/**
-	 * Returns the query for this ARO, including the variable conditions
-	 */
-	public function getQuery( $conditions ) {
-		return '';
-
-	} // END getQuery() */
-
-
-	/**
-	 * Retrieve the table's db object
-	 */
-	public function getDbObject() {
-		return self::$__db;
-
-	} // END getDbObject() */
-
-
-	/**
-	 * Nasty function to handle static child members
-	 */
-	public function getStaticChildValue( $key ) {
-		static $values = array();
-		if ( empty($values[$key]) ) {
-			$class = get_class($this);
-			eval('$v = '.$class.'::$_'.$key.';');
-			$values[$key] = $v;
-		}
-		return $values[$key];
-
-	} // END getStaticChildValue() */
-
+	public function getQuery( $conditions = '' ) {
+		return 'SELECT * FROM '.$this->getTableName().( $conditions ? ' WHERE '.$conditions : '' ).';';
+	}
 
 	/**
 	 * Returns all records it finds
 	 */
-	public function fetch( $clause, $class = 'SimpleArrayObject' ) {
-		$szSqlQuery = $this->getQuery($clause);
-		return $this->getDbObject()->fetch($szSqlQuery, $class);
+	public function fetch( $conditions ) {
+		$szSqlQuery = $this->getQuery($conditions);
+		return $this->byQuery($szSqlQuery);
 
 	} // END fetch() */
 
-
 	/**
-	 * Replaces question marks by given values
+	 * 
 	 */
-	public function replaceMarks( $args ) {
-		$str = array_shift($args);
-		$p = 0;
-		while ( is_int($q=strpos($str, '?', $p)) && 0 < count($args) ) {
-			$str = substr_replace($str, $this->getDbObject()->escapeAndQuote(array_shift($args)), $q, 1);
-		}
-		return $str;
-
-	} // END replaceMarks() */
-
-
-	/**
-	 * Counts records by using count_rows(), not count()
-	 */
-	public function count( $clause ) {
-		if ( 1 < func_num_args() ) {
-			$clause = $this->replaceMarks(func_get_args());
-		}
-		return $this->getDbObject()->count_rows($this->getQuery($clause));
-
-	} // END count() */
-
-
-	/**
-	 * Must return one record
-	 */
-	public function byPk( $value, $extra = null ) {
-		$args = func_get_args();
-		$value = array_shift($args);
-		if ( null !== $extra && 1 < func_num_args() ) {
-			$extra = $this->replaceMarks($args);
-		}
-		$field = $this->getStaticChildValue('table').'.'.$this->getStaticChildValue('pk');
-		$query = $field.' = ?' . ( $extra ? ' AND '.$extra : '' );
-		return $this->findOne( $query, $value );
-
-	} // END byPk() */
-
-
-	/**
-	 * Returns 0 or 1 record
-	 */
-	public function findFirst( $query ) {
-		$args = func_get_args();
-		$args[0] .= ' LIMIT 1';
-		$r = call_user_func_array( array($this, 'findMany'), $args );
-		if ( 0 < count($r) ) {
-			return $r[0];
-		}
-		return false;
-
-	} // END findFirst() */
-
-
-	/**
-	 * Must return one record
-	 */
-	public function findOne( $query ) {
-		$args = func_get_args();
-		$args[0] .= ' LIMIT 2';
-		$r = call_user_func_array( array($this, 'findMany'), $args );
-		if ( 1 !== count($r) ) {
-			throw new AroException( 'Not exactly one record found', count($r) );
-		}
-		return $r[0];
-
-	} // END findOne() */
-
-
-	/**
-	 * Returns 0 or more records
-	 */
-	public function findMany( $query ) {
-		if ( 1 < func_num_args() ) {
-			$query = $this->replaceMarks(func_get_args());
-		}
+	public function byQuery( $f_szSqlQuery ) {
 		$class = get_class($this);
-		$r = $this->fetch($query, $class);
+		$r = $this->getDbObject()->fetch($f_szSqlQuery, $class);
 		if ( false === $r ) {
 			throw new DbException( $this->getDbObject()->error, $this->getDbObject()->errno );
 		}
 		return $r;
 
-	} // END findMany() */
+	} // END byQuery() */
 
-
-	/**
-	 * 
-	 */
-	public function save() {
-		$pk = $this->getStaticChildValue('pk');
-		if ( null === $this->$pk ) {
-			return $this->saveAsNew();
+	public function findOne( $conditions ) {
+		$r = $this->fetch( $conditions.' LIMIT 2' );
+		if ( !$r || 1 != count($r) ) {
+			throw new AROException('ARO: Not exactly one record found');
 		}
-		$arrUpdate = array();
-		foreach ( $this->getStaticChildValue('columns') AS $k ) {
-			if ( isset($this->_changedColumns[$k]) ) {
-				$arrUpdate[$k] = $this->$k;
-			}
-		}
-		unset($arrUpdate[$pk]);
-		return 0 < $arrUpdate ? $this->getDbObject()->update( $this->getStaticChildValue('table'), $arrUpdate, $pk.' = '.$this->getDbObject()->escapeAndQuote($this->_values[$pk]) ) : false;
+		return $r[0];
+	}
 
-	} // END save() */
+	public function findMany( $conditions = '' ) {
+		return $this->fetch( $conditions );
+	}
 
+	public function byPK( $pk, $more = '' ) {
+		return $this->findOne( $this->getTableName().'.'.$this->getPKName().' = '.$this->getDbObject()->escapeAndQuote($pk).( $more ? ' AND ( '.$more.' )' : '' ) );
+	}
 
-	/**
-	 * 
-	 */
-	public function saveAsNew() {
-		$pk = $this->getStaticChildValue('pk');
-		$arrInsert = array();
-		foreach ( $this->getStaticChildValue('columns') AS $k ) {
-			$arrInsert[$k] = $this->_values[$k];
-		}
-		unset($arrInsert[$pk]);
-		if ( !$this->getDbObject()->insert($this->getStaticChildValue('table'), $arrInsert) ) {
+	public function get( $pk, $more = '' ) { // alias for ->byPK
+		return $this->byPK( $pk, $more );
+	}
+
+	public function findFirst( $conditions ) {
+		$r = $this->fetch( $conditions.' LIMIT 1' );
+		if ( 1 > count($r) ) {
 			return false;
 		}
-		return $this->getDbObject()->insert_id();
+		return $r[0];
+	}
 
-	} // END saveAsNew() */
+
+	// Object properties
+	public $_GETTERS = array(
+//		'name' => array( Integer self::GETTER_TYPE, Boolean Cache?, String Class/Function [, String InternalField, String ExternalField ] )
+	);
 
 
-	/**
-	 * 
+	// Object methods
+	final public function __get( $key ) {
+		return property_exists( $this, $key ) ? $this->$key : $this->_getter( $key );
+	}
+
+	/** 
+	 * The following method has not been tested AT ALL.
+	 * So far, four types are available (see top of class).
 	 */
-	public function delete() {
-		$pk = $this->getStaticChildValue('pk');
-		$r = $this->getDbObject()->delete( $this->getStaticChildValue('table'), "".$pk." = '".$this->getDbObject()->escape($this->_values[$pk])."'" );
-		unset($this);
-		return $r;
-
-	} // END delete() */
-
-
-	/**
-	 * Copies and/or replaces data from $data into $this
-	 */
-	public function fill( $data ) {
-		foreach ( $data AS $k => $v ) {
-			$this->_values[$k] = $v;
+	final public function _getter( $key ) {
+		if ( isset($this->_GETTERS[$key]) && 3 <= count($this->_GETTERS[$key]) ) {
+			$g = $this->_GETTERS[$key];
+			$cache = $g[1];
+			$cf = $g[2];
+			switch ( $g[0] ) {
+				case self::GETTER_ONE:
+				case self::GETTER_MANY:
+				case self::GETTER_FIRST:
+					if ( 5 == count($g) ) {
+						$finder = call_user_func(array($cf, 'finder'));
+						$fn = $g[2] == self::GETTER_ONE ? 'findOne' : ( $g[2] == self::GETTER_MANY ? 'findMany' : 'findFirst' );
+						$r = call_user_func(array($finder, $fn), $g[4].' = '.$this->getDbObject()->escapeAndQuote($this->{$g[3]}));
+						if ( $cache ) {
+							$this->$key = $r;
+						}
+						return $r;
+					}
+				break;
+				case self::GETTER_FUNCTION:
+					if ( is_callable(array($this, $cf)) ) {
+						$r = call_user_func(array($this, $cf));
+						if ( $cache ) {
+							$this->$key = $r;
+						}
+						return $r;
+					}
+				break;
+			}
 		}
-		$this->_trackChanges = true;
+		return null;
+//		return isset($this->_GETTERS[$key]) && is_callable(array($this, $this->_GETTERS[$key])) ? call_user_func(array($this, $this->_GETTERS[$key])) : null;
+	}
 
-	} // END fill() */
+	protected function delete() {
+		return $this->getDbObject()->delete( $this->getTableName(), $this->getPKName().' = '.$this->getDbObject()->escapeAndQuote($this->getPKValue()).' LIMIT 1' );
+	}
 
+	protected function fill( $data, $init = true ) {
+		foreach ( $data AS $k => $v ) {
+			$this->$k = $v;
+		}
+		if ( $init ) {
+			$this->init();
+		}
+	}
 
-	/**
-	 * Returns this object in PHP Array format (this[x]), instead of PHP Object (this->x)
-	 */
-	public function asArray() {
-		return (array)$this->_values;
+	protected function init() { } // dummy untill used by ancestor
 
-	} // END asArray() */
+	public function getDbObject() {
+		return self::$_db;
+	}
 
+	public function getTableName() {
+		$class = get_class($this);
+		return constant( $class.'::_TABLE' );
+	}
 
-} // END Class ActiveRecordObject
+	public function getPKName() {
+		$class = get_class($this);
+		return constant( $class.'::_PK' );
+	}
+
+	public function getPKValue() {
+		$pkName = $this->getPKName();
+		return $this->$pkName;
+	}
+
+}
 
 

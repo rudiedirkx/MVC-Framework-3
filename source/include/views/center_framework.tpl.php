@@ -1,4 +1,5 @@
-<html style="padding:0;margin:0;">
+<!DOCTYPE html>
+<html>
 
 <head>
 <title><?=$_szHtmlTitle?></title>
@@ -9,7 +10,7 @@
 <?=$_szHtmlHead?>
 </head>
 
-<body scroll="auto" style="overflow:auto;margin:0;padding:2px;">
+<body>
 <table border="0" cellpadding="0" cellspacing="0" align="center" width="100%" height="100%">
 <tr valign="middle"><td align="center"><?=$_szHtmlContents?></td></tr>
 </table>

@@ -4,6 +4,8 @@ define( 'MESSAGE_LEVEL_INFO',		101 );
 define( 'MESSAGE_LEVEL_WARNING',	102 );
 define( 'MESSAGE_LEVEL_ERROR',		103 );
 
+class InvalidURIException extends Exception { }
+
 abstract class __TopModule {
 
 	/**
@@ -34,7 +36,7 @@ abstract class __TopModule {
 
 		$arrUri = explode("/", substr($f_szFullRequestUri, 1));
 		$szModule = strtolower(array_shift($arrUri));
-		$szModuleClassFile = PROJECT_LOGIC.'/inc.cls.mod_'.$szModule.'.php';
+		$szModuleClassFile = PROJECT_CONTROLLERS.'/inc.cls.mod_'.$szModule.'.php';
 
 		$inArgs = array();
 		if ( 1 < count($arrModule=explode('-', $szModule)) ) {
@@ -47,7 +49,7 @@ abstract class __TopModule {
 				}
 			}
 			$szModule = str_replace('-', '_', array_pop($arrModule));
-			$szModuleClassFile = PROJECT_LOGIC.'/'.implode('/', $arrModule).'/inc.cls.mod_'.$szModule.'.php';
+			$szModuleClassFile = PROJECT_CONTROLLERS.'/'.implode('/', $arrModule).'/inc.cls.mod_'.$szModule.'.php';
 		}
 
 		$szUri = '/'.implode('/', $arrUri);
@@ -123,7 +125,8 @@ abstract class __TopModule {
 			}
 		}
 
-		exit(date('[Y-m-d H:i:s').'] Invalid request URI: '.$GLOBALS['g_szRequestUri']);
+		throw new InvalidURIException;
+//		exit(date('[Y-m-d H:i:s').'] Invalid request URI: '.$GLOBALS['g_szRequestUri']);
 
 	} // END exec() */
 

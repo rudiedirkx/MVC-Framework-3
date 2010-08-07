@@ -1,4 +1,4 @@
-<?php #1.7
+<?php #2.1
 
 require_once(dirname(__FILE__).'/inc.cls.db_generic.php');
 
@@ -34,7 +34,7 @@ class db_mysqli extends db_generic {
 	}
 
 	public function escape($v) {
-		return $this->dbCon->real_escape_string($v);
+		return $this->dbCon->real_escape_string((string)$v);
 	}
 
 	public function insert_id() {
@@ -53,13 +53,13 @@ class db_mysqli extends db_generic {
 		return $r;
 	}
 
-	public function fetch($f_szSqlQuery) {
+	public function fetch( $f_szSqlQuery, $f_szClass = null ) {
 		$r = $this->query($f_szSqlQuery);
 		if ( !is_object($r) ) {
 			return false;
 		}
 		$a = array();
-		while ( $l = $r->fetch_assoc() ) {
+		while ( $l = $r->fetch_object($f_szClass) ) {
 			$a[] = $l;
 		}
 		return $a;
@@ -93,18 +93,23 @@ class db_mysqli extends db_generic {
 		return $r->num_rows;
 	}
 
-	public function select_by_field($tbl, $field, $where = '') {
-		$r = $this->query('SELECT * FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';');
+	public function fetch_by_field( $query, $f_szClass = null ) {
+		$r = $this->query($query);
 		if ( !is_object($r) ) {
 			return false;
 		}
 		$a = array();
-		while ( $l = $r->fetch_assoc() ) {
+		while ( $l = $r->fetch_object($f_szClass) ) {
 			$a[$l[$field]] = $l;
 		}
 		return $a;
 	}
 
+	public function select_by_field( $tbl, $field, $where = '', $f_szClass = null ) {
+		$query = 'SELECT * FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';';
+		return $this->fetch_by_field($query);
+	}
+
 } // END Class db_mysqli
 
-?>
+

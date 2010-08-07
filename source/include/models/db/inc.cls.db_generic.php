@@ -1,4 +1,4 @@
-<?php #1.6
+<?php #2.1
 
 abstract class DB_Generic {
 
@@ -12,7 +12,6 @@ abstract class DB_Generic {
 	public function connected() {
 		return false;
 	}
-	public function escape( $v ) {}
 	public function insert_id() {}
 	public function affected_rows() {}
 	public function query( $f_szSqlQuery ) {}
@@ -22,17 +21,18 @@ abstract class DB_Generic {
 	public function count_rows($f_szSqlQuery) {}
 	public function select_by_field($tbl, $field, $where = '') {}
 
+	public function escape( $v ) {
+		return addslashes($v);
+	}
+
 	public function escapeAndQuote($v) {
-		if ( $v === true ) {
-			return "'1'";
-		}
-		else if ( $v === false ) {
-			return "'0'";
+		if ( is_bool($v) ) {
+			$v = (int)$v;
 		}
 		else if ( $v === null ) {
 			return 'NULL';
 		}
-		return "'".$this->escape($v)."'";
+		return "'".$this->escape((string)$v)."'";
 	}
 
 	public function select($f_szTable, $f_szWhere = '') {
@@ -89,4 +89,4 @@ abstract class DB_Generic {
 
 } // END Class db_generic
 
-?>
+

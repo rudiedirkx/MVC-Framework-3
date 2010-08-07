@@ -22,7 +22,7 @@ class __Home extends __TopModule
 					if ( !is_dir($f) ) {
 						$c[count($c)-1] = $parrMatches[1];
 					}
-					echo '<li><a title="'.$f.'" href="'.implode('-', $c).'/">'.basename($f).'</a>';
+					echo '<li><a title="'.$f.'" href="'.implode('-', $c).'">'.basename($f).'</a>';
 					if ( is_dir($f) ) {
 						echo '<ul>';
 						pd(glob($f.'/*'));

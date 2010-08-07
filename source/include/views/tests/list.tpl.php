@@ -1,5 +1,5 @@
-<!---szHtmlTitle:Oeleboele ;)--->
-<!---szHtmlHead:<script type="text/javascript" src="/js/mods/kk/juden.js"></script>--->
+<?$this->assign('_szHtmlTitle', 'Oeleboele ;)')?>
+<?$this->assign('_szHtmlHead', '<script type="text/javascript" src="/js/mods/kk/juden.js"></script>')?>
 
 <link rel="stylesheet" type="text/css" href="/css/oele.css" />
 <script type="text/javascript" src="/js/mootools.js"></script>
