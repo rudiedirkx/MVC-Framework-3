@@ -1,9 +1,12 @@
-<?php # 2.1
+<?php #1.7
 
 require_once(dirname(__FILE__).'/inc.cls.db_generic.php');
-require_once(dirname(__FILE__).'/inc.cls.simplearrayobject.php');
 
 class db_mysqli extends db_generic {
+
+	public function close() {
+		return $this->dbCon->close();
+	}
 
 	protected $dbCon = null;
 	public $error = '';
@@ -27,7 +30,7 @@ class db_mysqli extends db_generic {
 	}
 
 	public function connected() {
-		return (0 === $this->dbCon->connect_errno);
+		return (is_object($this->dbCon) && 0 === $this->dbCon->connect_errno);
 	}
 
 	public function escape($v) {
@@ -50,15 +53,14 @@ class db_mysqli extends db_generic {
 		return $r;
 	}
 
-	public function fetch($f_szSqlQuery, $f_szClass = 'SimpleArrayObject') {
-		$szClass = class_exists($f_szClass, true) ? $f_szClass : 'SimpleArrayObject';
+	public function fetch($f_szSqlQuery) {
 		$r = $this->query($f_szSqlQuery);
 		if ( !is_object($r) ) {
 			return false;
 		}
 		$a = array();
 		while ( $l = $r->fetch_assoc() ) {
-			$a[] = new $szClass($l);
+			$a[] = $l;
 		}
 		return $a;
 	}
@@ -68,9 +70,9 @@ class db_mysqli extends db_generic {
 		if ( !is_object($r) ) {
 			return false;
 		}
-		$a = new SimpleArrayObject;
+		$a = array();
 		while ( $l = $r->fetch_row() ) {
-			$a->set($l[0], $l[1]);
+			$a[$l[0]] = $l[1];
 		}
 		return $a;
 	}
@@ -91,15 +93,14 @@ class db_mysqli extends db_generic {
 		return $r->num_rows;
 	}
 
-	public function select_by_field($tbl, $field, $where = '', $f_szClass = 'SimpleArrayObject') {
-		$szClass = class_exists($f_szClass, true) ? $f_szClass : 'SimpleArrayObject';
+	public function select_by_field($tbl, $field, $where = '') {
 		$r = $this->query('SELECT * FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';');
 		if ( !is_object($r) ) {
 			return false;
 		}
-		$a = new SimpleArrayObject;
+		$a = array();
 		while ( $l = $r->fetch_assoc() ) {
-			$a->set($l[$field], new $szClass($l));
+			$a[$l[$field]] = $l;
 		}
 		return $a;
 	}

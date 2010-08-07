@@ -13,6 +13,9 @@ class mod_version_2 extends __topmodule {
 		require_once(PROJECT_MODELS.'/db/new/inc.cls.activerecordobject.php');
 		require_once(PROJECT_MODELS.'/db/new/inc.cls.person.php');
 		$this->db = $GLOBALS['db'];
+		if ( !$this->db->connected() ) {
+			exit('Can\'t connect to db');
+		}
 		ActiveRecordObject::setDbObject( $this->db );
 	}
 

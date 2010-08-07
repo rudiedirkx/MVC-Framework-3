@@ -7,10 +7,10 @@ if ( false ) {
 	define( 'SQL_USER',				'xx' );
 	define( 'SQL_PASS',				'xx' );
 } else {
-	define( 'SQL_HOST',				'yy' );
-	define( 'SQL_DB',				'yy' );
-	define( 'SQL_USER',				'yy' );
-	define( 'SQL_PASS',				'yy' );
+	define( 'SQL_HOST',				'localhost' );
+	define( 'SQL_DB',				'tests' );
+	define( 'SQL_USER',				'usager' );
+	define( 'SQL_PASS',				'usager' );
 }
 
 ?>
