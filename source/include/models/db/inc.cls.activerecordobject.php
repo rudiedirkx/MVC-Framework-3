@@ -112,7 +112,7 @@ abstract class ActiveRecordObject {
 
 
 	// Object properties
-	public $_GETTERS = array(
+	public static $_GETTERS = array(
 //		'name' => array( Integer self::GETTER_TYPE, Boolean Cache?, String Class/Function [, String InternalField, String ExternalField ] )
 	);
 
@@ -127,8 +127,9 @@ abstract class ActiveRecordObject {
 	 * So far, four types are available (see top of class).
 	 */
 	final public function _getter( $key ) {
-		if ( isset($this->_GETTERS[$key]) && 3 <= count($this->_GETTERS[$key]) ) {
-			$g = $this->_GETTERS[$key];
+		$gs = $this::$_GETTERS;
+		if ( isset($gs[$key]) && 3 <= count($gs[$key]) ) {
+			$g = $gs[$key];
 			$cache = $g[1];
 			$cf = $g[2];
 			switch ( $g[0] ) {

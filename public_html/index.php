@@ -48,7 +48,10 @@ try {
 catch ( InvalidURIException $ex ) {
 	exit('['.date('Y-m-d H:i:s').'] Page not found: '.$g_szRequestUri);
 }
+catch ( AROException $ex ) {
+	exit('['.date('Y-m-d H:i:s').'] Model error: '.$ex->getMessage());
+}
 catch ( DBException $ex ) {
-	exit('['.date('Y-m-d H:i:s').'] Invalid data encountered. Go back and try again.');
+	exit('['.date('Y-m-d H:i:s').'] Database error: '.$ex->getMessage());
 }
 
