@@ -1,0 +1,9 @@
+Tiny PHP MVC framework.
+
+Models: Uses ActiveRecordObjects with custom relations (_GETTERS) and anything you might want to add.
+Views: Uses own TemplateEngine (native PHP) with Helpers.
+Controllers: Uses a very small, very fast Dispatcher with named URLs: /admin-subsection-client-14/details/save
+
+Todo:
+- Routes for the Dispatcher
+- Some kind of very-low-level ACL
