@@ -23,5 +23,6 @@ Controllers can be found in
 			source/controllers/inc.cls.__topmodule.php
 
 Todo:
+- Implement Dwoo as Template engine? OR make something friendly to inject stuff into <head> (but not like before!)
 - Routes for the Dispatcher
 - Some kind of very-low-level ACL
