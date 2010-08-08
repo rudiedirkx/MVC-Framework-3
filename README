@@ -4,6 +4,24 @@ Models: Uses ActiveRecordObjects with custom relations (_GETTERS) and anything y
 Views: Uses own TemplateEngine (native PHP) with Helpers.
 Controllers: Uses a very small, very fast Dispatcher with named URLs: /admin-subsection-client-14/details/save
 
+Models can be found in
+	source/include/models/
+		with the necessary base classes in
+			source/include/models/db/
+Views can be found in
+	source/include/views/
+		with as many sub folders as wanted  and
+		with the template base classes in 
+			source/include/
+Controllers can be found in
+	source/controllers/
+		with as many subfolders as wanted.
+		Controllers themselves can have 'wildcards'. The present exmaple is
+			source/controllers/admin/clubs-N/resources/...
+				which would be called by URL: /admin-clubs-481-resources...
+		For details, check the Dispatcher code:
+			source/controllers/inc.cls.__topmodule.php
+
 Todo:
 - Routes for the Dispatcher
 - Some kind of very-low-level ACL
