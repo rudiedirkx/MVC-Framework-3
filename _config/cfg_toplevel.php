@@ -25,19 +25,11 @@ define( 'PROJECT_INC_DB',		PROJECT_INCLUDE . '/models/db' );
 define( 'RUNTIME_LOGS',			PROJECT_RUNTIME . '/logs/' );
 
 
-
 # session vars #
 define( 'SESSION_NAME',			'pj_3_1' );
-
-
-# http location vars #
-define( 'HTTP_BASEPAGE',		basename($_SERVER['SCRIPT_NAME']) );
-define( 'PHP_SELF',				$_SERVER['SCRIPT_NAME'] );
-
-define( 'HTTP_PROJECT_PATH',	'' ); // All starts with /
 
 
 # project version from VERSION file #
 define( 'PROJECT_VERSION',		trim(file_get_contents(PROJECT_PUBLIC.'/VERSION')) );
 
-?>
+
