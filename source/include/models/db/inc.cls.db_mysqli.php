@@ -58,8 +58,10 @@ class db_mysqli extends db_generic {
 		if ( !is_object($r) ) {
 			return false;
 		}
+		$cb = array($r, 'fetch_object');
+		$cl = $f_szClass && class_exists((string)$f_szClass, true) ? array((string)$f_szClass) : array();
 		$a = array();
-		while ( $l = $r->fetch_object($f_szClass) ) {
+		while ( $l = call_user_func_array($cb, $cl) ) {
 			$a[] = $l;
 		}
 		return $a;
@@ -93,21 +95,23 @@ class db_mysqli extends db_generic {
 		return $r->num_rows;
 	}
 
-	public function fetch_by_field( $query, $f_szClass = null ) {
+	public function fetch_by_field( $query, $field, $class = null ) {
 		$r = $this->query($query);
 		if ( !is_object($r) ) {
 			return false;
 		}
+		$cb = array($r, 'fetch_object');
+		$cl = $class && class_exists((string)$class, true) ? array((string)$class) : array();
 		$a = array();
-		while ( $l = $r->fetch_object($f_szClass) ) {
-			$a[$l[$field]] = $l;
+		while ( $l = call_user_func_array($cb, $cl) ) {
+			$a[$l->$field] = $l;
 		}
 		return $a;
 	}
 
 	public function select_by_field( $tbl, $field, $where = '', $f_szClass = null ) {
 		$query = 'SELECT * FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';';
-		return $this->fetch_by_field($query);
+		return $this->fetch_by_field($query, $field, $f_szClass);
 	}
 
 } // END Class db_mysqli

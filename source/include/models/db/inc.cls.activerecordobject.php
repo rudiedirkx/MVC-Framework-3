@@ -1,4 +1,4 @@
-<?php #2.1
+<?php
 
 class DBException extends Exception { }
 class AROException extends DBException { }
@@ -35,21 +35,26 @@ abstract class ActiveRecordObject {
 
 	// Semi-static functions
 	public function insert( $data ) {
-		$this->getDbObject()->insett( $this->getTableName(), $data );
+		if ( $this->getDbObject()->insert( $this->getTableName(), $data ) ) {
+			return (int)$this->getDbObject()->insert_id();
+		}
+		return false;
 	}
 
 	public function replace( $data ) {
-		$this->getDbObject()->replace( $this->getTableName(), $data );
+		return $this->getDbObject()->replace( $this->getTableName(), $data );
 	}
 
 	public function updateMany( $data, $conditions ) {
-		$this->getDbObject()->update( $this->getTableName(), $data, $conditions );
+		return $this->getDbObject()->update( $this->getTableName(), $data, $conditions );
 	}
 
 	public function deleteMany( $conditions ) { // there might be a LIMIT and ORDER BY in $conditions (and that's fine)
-		$this->getDbObject()->delete( $this->getTableName(), $conditions );
+		return $this->getDbObject()->delete( $this->getTableName(), $conditions );
 	}
 
+
+	// object methods
 	protected function __construct( $data = null ) {
 		if ( null !== $data ) {
 			$this->fill( $data );
