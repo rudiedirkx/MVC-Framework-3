@@ -103,10 +103,6 @@ abstract class ActiveRecordObject {
 		return $this->findOne( $this->getTableName().'.'.$this->getPKName().' = '.$this->getDbObject()->escapeAndQuote($pk).( $more ? ' AND ( '.$more.' )' : '' ) );
 	}
 
-	public function get( $pk, $more = '' ) { // alias for ->byPK
-		return $this->byPK( $pk, $more );
-	}
-
 	public function findFirst( $conditions ) {
 		$r = $this->fetch( $conditions.' LIMIT 1' );
 		if ( 1 > count($r) ) {
@@ -118,7 +114,7 @@ abstract class ActiveRecordObject {
 
 	// Object properties
 	public static $_GETTERS = array(
-//		'name' => array( Integer self::GETTER_TYPE, Boolean Cache?, String Class/Function [, String InternalField, String ExternalField ] )
+//		'name' => array( Integer self::GETTER_TYPE, Boolean Cache?, String ResultClass/Function [, String InternalField, String ExternalField ] )
 	);
 
 
@@ -143,7 +139,7 @@ abstract class ActiveRecordObject {
 				case self::GETTER_FIRST:
 					if ( 5 == count($g) ) {
 						$finder = call_user_func(array($cf, 'finder'));
-						$fn = $g[2] == self::GETTER_ONE ? 'findOne' : ( $g[2] == self::GETTER_MANY ? 'findMany' : 'findFirst' );
+						$fn = $g[2] == self::GETTER_ONE ? 'findOne' : ( $g[0] == self::GETTER_MANY ? 'findMany' : 'findFirst' );
 						$r = call_user_func(array($finder, $fn), $g[4].' = '.$this->getDbObject()->escapeAndQuote($this->{$g[3]}));
 						if ( $cache ) {
 							$this->$key = $r;
