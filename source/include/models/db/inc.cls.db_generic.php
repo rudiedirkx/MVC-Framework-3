@@ -1,6 +1,27 @@
-<?php #2.1
+<?php #2.2
 
-abstract class DB_Generic {
+abstract class db_generic {
+
+	public $qmark = '???';
+	public function replaceQMarks( $str, $args ) {
+		if ( !$args ) return $str;
+		$offset = 0;
+		foreach ( $args AS $arg ) {
+			$pos = strpos($str, $this->qmark, $offset);
+			if ( false === $pos ) break;
+			$arg = $this->escapeAndQuote($arg);
+			$str = substr_replace($str, $arg, $pos, strlen($this->qmark));
+			$offset = $pos + strlen($arg);
+		}
+		return $str;
+	}
+	function prepAndReplaceQMarks( $str, $args, $offset ) {
+		if ( $offset < count($args) ) {
+			$args = array_slice($args, $offset);
+			$str = $this->replaceQMarks( $str, $args );
+		}
+		return $str;
+	}
 
 	protected $dbCon;
 	public $error = '';
@@ -35,42 +56,58 @@ abstract class DB_Generic {
 		return "'".$this->escape((string)$v)."'";
 	}
 
-	public function select($f_szTable, $f_szWhere = '') {
-		return $this->fetch('SELECT * FROM '.$f_szTable.( $f_szWhere ? ' WHERE '.$f_szWhere : '' ).';');
+
+	public function select( $table, $where = '1' ) {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 2 );
+		$sql = 'SELECT * FROM '.$table.' WHERE '.$where.';';
+		return $this->fetch($sql);
 	}
 
-	public function max($tbl, $field, $where = '') {
+	public function select_first( $table, $where = '1' ) {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 2 );
+		$sql = 'SELECT * FROM '.$table.' WHERE '.$where.';';
+		return $this->fetch($sql, null, true); // sql, ?class, ?first
+	}
+
+	public function max($tbl, $field, $where = '1') {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 3 );
 		return $this->select_one($tbl, 'MAX('.$field.')', $where);
 	}
 
-	public function min($tbl, $field, $where = '') {
+	public function min($tbl, $field, $where = '1') {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 3 );
 		return $this->select_one($tbl, 'MIN('.$field.')', $where);
 	}
 
-	public function count($tbl, $where = '') {
+	public function count($tbl, $where = '1') {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 2 );
 		return $this->select_one($tbl, 'COUNT(1)', $where);
 	}
 
-	public function select_fields($tbl, $fields, $where = '') {
-		return $this->fetch_fields('SELECT '.$fields.' FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';');
+	public function select_fields($tbl, $fields, $where = '1') {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 3 );
+		$sql = 'SELECT '.$fields.' FROM '.$tbl.' WHERE '.$where.';';
+		return $this->fetch_fields($sql);
 	}
 
 	public function replace_into($tbl, $values) {
 		foreach ( $values AS $k => $v ) {
 			$values[$k] = $this->escapeAndQuote($v);
 		}
-		return $this->query('REPLACE INTO '.$tbl.' ('.implode(',', array_keys($values)).') VALUES ('.implode(",", $values).');');
+		$sql = 'REPLACE INTO '.$tbl.' ('.implode(',', array_keys($values)).') VALUES ('.implode(',', $values).');';
+		return $this->query($sql);
 	}
 
 	public function insert($tbl, $values) {
 		foreach ( $values AS $k => $v ) {
 			$values[$k] = $this->escapeAndQuote($v);
 		}
-		$szSqlQuery = 'INSERT INTO '.$tbl.' ('.implode(', ', array_keys($values)).') VALUES ('.implode(", ", $values).');';
-		return $this->query($szSqlQuery);
+		$sql = 'INSERT INTO '.$tbl.' ('.implode(', ', array_keys($values)).') VALUES ('.implode(", ", $values).');';
+		return $this->query($sql);
 	}
 
-	public function update($tbl, $update, $where = '') {
+	public function update($tbl, $update, $where = '1') {
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 3 );
 		if ( !is_string($update) ) {
 			$u = '';
 			foreach ( (array)$update AS $k => $v ) {
@@ -78,12 +115,14 @@ abstract class DB_Generic {
 			}
 			$update = substr($u, 1);
 		}
-		$query = 'UPDATE '.$tbl.' SET '.$update.( $where ? ' WHERE '.$where : '' ).';';
-		return $this->query($query);
+		$sql = 'UPDATE '.$tbl.' SET '.$update.( $where ? ' WHERE '.$where : '' ).';';
+		return $this->query($sql);
 	}
 
 	public function delete($tbl, $where) {
-		return $this->query('DELETE FROM '.$tbl.' WHERE '.$where.';');
+		$where = $this->prepAndReplaceQMarks( $where, func_get_args(), 2 );
+		$sql = 'DELETE FROM '.$tbl.' WHERE '.$where.';';
+		return $this->query($sql);
 	}
 
 

@@ -1,4 +1,4 @@
-<?php #2.1
+<?php #2.2
 
 require_once(dirname(__FILE__).'/inc.cls.db_generic.php');
 
@@ -53,13 +53,16 @@ class db_mysqli extends db_generic {
 		return $r;
 	}
 
-	public function fetch( $f_szSqlQuery, $f_szClass = null ) {
+	public function fetch( $f_szSqlQuery, $f_szClass = null, $f_bJustFirst = false ) {
 		$r = $this->query($f_szSqlQuery);
 		if ( !is_object($r) ) {
 			return false;
 		}
 		$cb = array($r, 'fetch_object');
 		$cl = $f_szClass && class_exists((string)$f_szClass, true) ? array((string)$f_szClass) : array();
+		if ( $f_bJustFirst ) {
+			return call_user_func_array($cb, $cl);
+		}
 		$a = array();
 		while ( $l = call_user_func_array($cb, $cl) ) {
 			$a[] = $l;
