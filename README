@@ -1,7 +1,5 @@
 Tiny PHP MVC framework.
 
-** Even though this is very open source, I'm not a helpdesk. You're free to copy and alter, but errors are to be directed elsewhere **
-
 Models: Uses ActiveRecordObjects with custom relations (_GETTERS) and anything you might want to add.
 Views: Uses own TemplateEngine (native PHP) with Helpers.
 Controllers: Uses a very small, very fast Dispatcher with named URLs: /admin-subsection-client-14/details/save
@@ -27,4 +25,4 @@ Controllers can be found in
 Todo:
 - Implement Dwoo as Template engine? OR make something friendly to inject stuff into <head> (but not like before!)
 - Routes for the Dispatcher
-- Some kind of very-low-level ACL
+- Copy ACL from BaanReserveren
