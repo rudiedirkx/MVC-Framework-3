@@ -33,7 +33,55 @@ abstract class ActiveRecordObject {
 
 
 
+
+	/**
+	 * Defines a form and its validation rules
+	 *
+	static function _form() {
+		$db = static::getDbObject(); // getDbObject is also a 'magic static' that's forwared to _getDbObject() by __callStatic
+		$default => array(
+			'username' => array(
+				'title' => 'Username',
+				'rules' => array(
+					// The simplest and most used
+					new ValidateNotEmpty('Username can not be empty'),
+					// $field = 'username', $form = $default, $context is added to the model/validator by the controller:
+					new ValidateFunction(function( $value, $field, $form, $context ) use ($db) {
+						$bUnique = $db->count('users', 'username = ?', $value);
+						// or possibly better:
+						$bUnique = !User::usernameExists($value);
+						return $bUnique;
+					}, 'This username already exists'),
+					// Or just a regex (this would make the the first (NotEmpty) rule unnecessary)
+					new ValidateRegex('/^[a-z][a-z0-9]$/i', 'Invalid username format'),
+				),
+				'description' => 'Please enter a simple username: alphanumeric, at least 5 characters',
+			),
+			'phone1' => array(
+				'title' => 'Phone 1',
+				'rules' => array(), // no rules
+			),
+			'phone2' => array(
+				'title' => 'Phone 1',
+				'rules' => array(), // also no rules
+			),
+			// Together though, phone1+phone2 do have a rule:
+			new MultiValidate(array('phone1', 'phone2'), array(
+				new ValidateNotEmpty('Must enter at least one phone number'),
+			), array( // options
+				'min' => 1,
+				'max' => 2,
+			)),
+		);
+		return compact('default')
+
+	} // END form() */
+
+
+
+
 	// Semi-static functions
+
 	public function insert( $data ) {
 		if ( $this->getDbObject()->insert( $this->getTableName(), $data ) ) {
 			return (int)$this->getDbObject()->insert_id();
