@@ -45,6 +45,13 @@ abstract class ActiveRecordObject {
 		return $this->getDbObject()->replace( $this->getTableName(), $data );
 	}
 
+	/**
+	 * In 5.3 semi-static functions like this will be handled by __callStatic.
+		Movie::update($data, $conditions) -> Movie::_update($data, $conditions)
+	 * Methods can than be named and called normally:
+		$movie->update($data);
+	 * Since we're not using PHP 5.3 (and there's no __callStatic), the update functions must be named different
+	 */
 	public function updateMany( $data, $conditions ) {
 		return $this->getDbObject()->update( $this->getTableName(), $data, $conditions );
 	}
