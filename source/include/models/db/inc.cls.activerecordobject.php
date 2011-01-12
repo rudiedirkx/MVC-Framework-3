@@ -45,7 +45,8 @@ abstract class ActiveRecordObject {
 				'rules' => array(
 					// The simplest and most used
 					new ValidateNotEmpty('Username can not be empty'),
-					// $field = 'username', $form = $default, $context is added to the model/validator by the controller:
+					// Or a very custom anonymous function with standard arguments:
+					// $field = 'username', $form = $default, $context is added to the model/validator by the controller (eg. the controller/$application)
 					new ValidateFunction(function( $value, $field, $form, $context ) use ($db) {
 						$bUnique = $db->count('users', 'username = ?', $value);
 						// or possibly better:
@@ -53,7 +54,7 @@ abstract class ActiveRecordObject {
 						return $bUnique;
 					}, 'This username already exists'),
 					// Or just a regex (this would make the the first (NotEmpty) rule unnecessary)
-					new ValidateRegex('/^[a-z][a-z0-9]$/i', 'Invalid username format'),
+					new ValidateRegex('/^[a-z][a-z0-9]{4,30}$/i', 'Invalid username format'),
 				),
 				'description' => 'Please enter a simple username: alphanumeric, at least 5 characters',
 			),
